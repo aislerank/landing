@@ -3,209 +3,391 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AisleRank — Get your supplement brand recommended by ChatGPT, Perplexity & Gemini</title>
+<title>AisleRank — Get recommended by ChatGPT, Perplexity & Gemini</title>
 <meta name="description" content="AI assistants are the new shopping aisle. AisleRank gets your supplement brand recommended by ChatGPT, Perplexity, Gemini & Google AI — and shows you exactly where competitors are beating you.">
+<meta property="og:title" content="AisleRank — Get recommended by AI assistants">
+<meta property="og:description" content="Your buyers ask AI. AI answers with a shortlist. We get you on it — and show you the competitors beating you today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <script>
-/* ============ CONFIG — edit these five values ============ */
+/* ============ CONFIG ============ */
 const CFG = {
   BRAND: "AisleRank",
   CALENDLY_URL: "https://calendly.com/derek-getaislerank/30min", // "AisleRank Walkthrough" — 15 min, Google Meet
   POSTHOG_KEY: "phc_niYkwEDU5tCtZaWqkVqzpLKGzmB2EtyScRxNQoSaQTiH", // public client token (project 498318)
   POSTHOG_HOST: "https://us.i.posthog.com",
   SUPABASE_URL: "https://wwcrnvteohzniwadsoyq.supabase.co",
-  SUPABASE_ANON: ""                                         // TODO: anon public key
+  SUPABASE_ANON: "" // TODO: anon public key (optional lead store)
 };
-/* ========================================================= */
+/* ================================ */
 </script>
 <style>
-  :root{--bg:#0b0f14;--panel:#121821;--panel2:#0f141c;--text:#e8edf3;--muted:#93a1b3;--acc:#31d98c;--acc2:#7aa2ff;--red:#ff6b6b;--amber:#ffb54d;--line:#1f2937;--radius:14px}
+  :root{
+    --bg:#04060a; --bg2:#070b12; --panel:rgba(255,255,255,.03); --panel-solid:#0b1018;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --text:#f2f5f9; --muted:#8b97a8; --dim:#5c6878;
+    --em:#34d399; --em2:#10b981; --vi:#818cf8; --am:#fbbf24; --red:#fb7185;
+    --grad:linear-gradient(92deg,#34d399 0%,#5eead4 45%,#818cf8 100%);
+    --r:18px; --rs:12px;
+    --font-d:"Space Grotesk",-apple-system,sans-serif; --font-b:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
-  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
-  header{padding:20px 0;border-bottom:1px solid var(--line)}
-  .nav{display:flex;justify-content:space-between;align-items:center}
-  .logo{font-weight:800;font-size:20px;letter-spacing:-.02em}
-  .logo em{color:var(--acc);font-style:normal}
-  .nav a.btn-sm{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 16px;border-radius:8px;text-decoration:none;font-size:14px}
-  .hero{padding:72px 0 40px;display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
-  h1{font-size:clamp(30px,4.4vw,46px);line-height:1.12;letter-spacing:-.03em;font-weight:800}
-  h1 .u{color:var(--acc)}
-  .sub{color:var(--muted);margin:18px 0 26px;font-size:18px;max-width:52ch}
-  .urlform{display:flex;gap:10px;flex-wrap:wrap}
-  .urlform input{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;color:var(--text);font-size:16px}
-  .urlform input:focus{outline:2px solid var(--acc2);border-color:transparent}
-  .btn{background:var(--acc);color:#06281a;border:0;border-radius:10px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap}
-  .btn:hover{filter:brightness(1.08)}
-  .btn.alt{background:var(--acc2);color:#0a1430}
-  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-  .tiny{font-size:13px;color:var(--muted);margin-top:10px}
-  .scorecard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-  .scorecard h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px}
-  .scorerow{display:flex;align-items:center;gap:12px;margin:10px 0}
-  .scorerow .name{width:130px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .bar{flex:1;height:10px;background:var(--panel2);border-radius:6px;overflow:hidden}
-  .bar i{display:block;height:100%;border-radius:6px}
-  .scorerow .val{width:34px;text-align:right;font-weight:700;font-size:14px}
-  .you .val{color:var(--red)} .them .val{color:var(--acc)}
-  .scorenote{font-size:13px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
-  section{padding:56px 0;border-top:1px solid var(--line)}
-  h2{font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin-bottom:10px}
-  .lead{color:var(--muted);max-width:64ch;margin-bottom:32px}
+  body{background:var(--bg);color:var(--text);font:15.5px/1.65 var(--font-b);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:rgba(52,211,153,.3)}
+
+  /* ---------- backdrop ---------- */
+  .fx{position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(900px 500px at 12% -8%, rgba(16,185,129,.14), transparent 60%),
+    radial-gradient(800px 520px at 88% 12%, rgba(99,102,241,.13), transparent 60%),
+    radial-gradient(700px 600px at 50% 115%, rgba(16,185,129,.07), transparent 60%),
+    var(--bg)}
+  .fx::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:28px 28px;
+    mask-image:radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%)}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    background:rgba(4,6,10,.65);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font:700 21px var(--font-d);letter-spacing:-.02em;text-decoration:none;color:var(--text)}
+  .logo em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;text-decoration:none;
+    font:600 15px var(--font-b);border-radius:12px;padding:13px 22px;transition:all .2s;white-space:nowrap}
+  .btn-em{background:var(--grad);color:#04231a;box-shadow:0 0 24px rgba(52,211,153,.35), inset 0 1px 0 rgba(255,255,255,.35)}
+  .btn-em:hover{transform:translateY(-1px);box-shadow:0 0 36px rgba(52,211,153,.5), inset 0 1px 0 rgba(255,255,255,.35)}
+  .btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--line2)}
+  .btn-ghost:hover{background:rgba(255,255,255,.08)}
+  .btn-sm{padding:9px 16px;font-size:13.5px;border-radius:10px}
+
+  /* ---------- hero ---------- */
+  .hero{padding:84px 0 64px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--em);
+    background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:99px;padding:6px 14px;margin-bottom:22px}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--em);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  h1{font:700 clamp(34px,4.6vw,56px)/1.07 var(--font-d);letter-spacing:-.03em}
+  h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);font-size:17.5px;margin:22px 0 30px;max-width:50ch}
+  .urlbar{display:flex;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:14px;padding:6px;
+    box-shadow:0 8px 40px rgba(0,0,0,.4);transition:border .2s, box-shadow .2s}
+  .urlbar:focus-within{border-color:rgba(52,211,153,.5);box-shadow:0 0 0 4px rgba(52,211,153,.12), 0 8px 40px rgba(0,0,0,.4)}
+  .urlbar input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font:500 15.5px var(--font-b);padding:10px 14px;min-width:0}
+  .urlbar input::placeholder{color:var(--dim)}
+  .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;color:var(--dim);font-size:13px}
+  .trust span::before{content:"✓";color:var(--em);margin-right:6px;font-weight:700}
+  .ok{color:var(--em);font-size:14.5px;display:none;margin-top:12px;font-weight:500}
+
+  /* ---------- scorecard ---------- */
+  .card-wrap{position:relative}
+  .card-wrap::before{content:"";position:absolute;inset:-30px -20px;background:radial-gradient(60% 60% at 50% 40%, rgba(52,211,153,.13), transparent 70%);z-index:-1}
+  .scard{position:relative;background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+    border:1px solid var(--line2);border-radius:22px;padding:26px;backdrop-filter:blur(8px);
+    box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08)}
+  .scard::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
+    background:linear-gradient(140deg, rgba(52,211,153,.5), transparent 35%, transparent 70%, rgba(129,140,248,.4));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .scard-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .scard-title{font:600 12px var(--font-b);letter-spacing:.12em;color:var(--muted)}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--em);letter-spacing:.08em}
+  .live .dot{width:6px;height:6px;border-radius:50%;background:var(--em);animation:pulse 2s infinite}
+  .srow{display:flex;align-items:center;gap:12px;margin:13px 0}
+  .srow .name{width:118px;font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .srow.you .name{color:var(--text);font-weight:600}
+  .bar{flex:1;height:9px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:6px;width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+  .srow .val{width:32px;text-align:right;font:700 15px var(--font-d)}
+  .b-red i{background:linear-gradient(90deg,#fb7185,#f43f5e)} .v-red{color:var(--red)}
+  .b-em i{background:linear-gradient(90deg,#34d399,#10b981)} .v-em{color:var(--em)}
+  .b-am i{background:linear-gradient(90deg,#fbbf24,#f59e0b)} .v-am{color:var(--am)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+  .chip{font-size:11.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:99px;padding:5px 11px}
+  .callout{margin-top:16px;background:rgba(251,113,133,.07);border:1px solid rgba(251,113,133,.22);border-radius:12px;padding:12px 14px;font-size:13px;color:#fda4af}
+  .callout b{color:#fecdd3}
+
+  /* ---------- sections ---------- */
+  section{padding:84px 0;position:relative}
+  .sec-line{border-top:1px solid var(--line)}
+  .kicker{font:700 12px var(--font-b);letter-spacing:.16em;color:var(--em);text-transform:uppercase;margin-bottom:14px}
+  h2{font:700 clamp(26px,3.2vw,38px)/1.15 var(--font-d);letter-spacing:-.02em;margin-bottom:14px}
+  .lead{color:var(--muted);font-size:16.5px;max-width:62ch;margin-bottom:44px}
+
+  /* stats band */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:8px 0 6px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:28px 26px;text-align:center;transition:transform .25s, border .25s}
+  .stat:hover{transform:translateY(-3px);border-color:var(--line2)}
+  .stat .n{font:700 clamp(34px,4vw,46px) var(--font-d);background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .l{color:var(--muted);font-size:14px;margin-top:8px}
+  .src{text-align:center;color:var(--dim);font-size:12px;margin-top:18px}
+
+  /* how it works */
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
-  .card .n{color:var(--acc);font-weight:800;font-size:14px;letter-spacing:.06em}
-  .card h3{margin:8px 0 8px;font-size:18px}
-  .card p{color:var(--muted);font-size:15px}
-  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .tier{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px;display:flex;flex-direction:column}
-  .tier.hot{border-color:var(--acc);position:relative}
-  .tier.hot::before{content:"MOST POPULAR";position:absolute;top:-10px;left:22px;background:var(--acc);color:#06281a;font-size:11px;font-weight:800;letter-spacing:.06em;padding:3px 10px;border-radius:20px}
-  .tier h3{font-size:17px}
-  .price{font-size:34px;font-weight:800;margin:10px 0 2px}
-  .price span{font-size:15px;color:var(--muted);font-weight:400}
-  .tier ul{list-style:none;margin:16px 0 22px;flex:1}
-  .tier li{padding:5px 0 5px 24px;position:relative;color:var(--muted);font-size:14.5px}
-  .tier li::before{content:"✓";position:absolute;left:0;color:var(--acc);font-weight:700}
-  .loomph{background:var(--panel);border:1px dashed #3a4a5f;border-radius:var(--radius);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--muted)}
-  .loomph .play{width:64px;height:64px;border-radius:50%;background:var(--acc2);display:flex;align-items:center;justify-content:center;font-size:22px;color:#0a1430}
-  .meth{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);padding:22px;font-size:14.5px;color:var(--muted)}
-  .faq details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:10px}
-  .faq summary{cursor:pointer;font-weight:600}
-  .faq p{color:var(--muted);margin-top:10px;font-size:15px}
-  footer{border-top:1px solid var(--line);padding:36px 0;color:var(--muted);font-size:13.5px}
-  footer a{color:var(--muted)}
-  .modal{position:fixed;inset:0;background:rgba(4,8,12,.8);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .fcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:30px 26px;position:relative;overflow:hidden;transition:transform .25s, border .25s}
+  .fcard:hover{transform:translateY(-4px);border-color:var(--line2)}
+  .fcard::after{content:"";position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(52,211,153,.55),transparent);opacity:0;transition:opacity .25s}
+  .fcard:hover::after{opacity:1}
+  .numchip{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(135deg, rgba(52,211,153,.18), rgba(129,140,248,.14));border:1px solid rgba(52,211,153,.3);
+    font:700 15px var(--font-d);color:var(--em);margin-bottom:18px}
+  .fcard h3{font:600 18.5px var(--font-d);margin-bottom:10px}
+  .fcard p{color:var(--muted);font-size:14.5px}
+
+  /* video */
+  .vframe{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line2);aspect-ratio:16/9;
+    background:linear-gradient(150deg,#0a1220 0%, #0a1626 45%, #101528 100%);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .vframe .play{width:76px;height:76px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;
+    color:#04231a;font-size:26px;box-shadow:0 0 40px rgba(52,211,153,.45);cursor:pointer;transition:transform .2s}
+  .vframe .play:hover{transform:scale(1.07)}
+  .vframe p{color:var(--muted);font-size:14px}
+
+  /* pricing */
+  .founding{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25);
+    color:#fcd34d;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:500;margin-bottom:36px}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  .tier{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px 26px;display:flex;flex-direction:column;position:relative;transition:transform .25s}
+  .tier:hover{transform:translateY(-4px)}
+  .tier.hot{background:linear-gradient(165deg, rgba(52,211,153,.09), rgba(129,140,248,.06));border:1px solid transparent}
+  .tier.hot::before{content:"";position:absolute;inset:0;border-radius:20px;padding:1.5px;background:var(--grad);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+  .hot-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--grad);color:#04231a;
+    font:700 11px var(--font-b);letter-spacing:.1em;padding:5px 14px;border-radius:99px;box-shadow:0 4px 18px rgba(52,211,153,.4)}
+  .tier h3{font:600 17px var(--font-d)}
+  .price{font:700 40px var(--font-d);margin:14px 0 2px;letter-spacing:-.02em}
+  .price span{font:500 14px var(--font-b);color:var(--muted)}
+  .psub{color:var(--dim);font-size:13px;margin-bottom:20px}
+  .tier ul{list-style:none;margin:0 0 26px;flex:1}
+  .tier li{padding:7px 0 7px 26px;position:relative;color:var(--muted);font-size:14px}
+  .tier li::before{content:"";position:absolute;left:0;top:12px;width:15px;height:15px;border-radius:50%;
+    background:rgba(52,211,153,.12) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="%2334d399" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>') center/9px no-repeat;border:1px solid rgba(52,211,153,.3)}
+
+  /* calendly */
+  .calframe{border:1px solid var(--line2);border-radius:22px;overflow:hidden;background:var(--panel-solid);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+
+  /* methodology */
+  .meth{display:flex;gap:20px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--em);border-radius:var(--rs);padding:26px 28px;color:var(--muted);font-size:14.5px;max-width:900px}
+  .meth .shield{font-size:22px;line-height:1.2}
+
+  /* faq */
+  .faq{max-width:780px}
+  .faq details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:border .2s}
+  .faq details[open]{border-color:var(--line2)}
+  .faq summary{cursor:pointer;font-weight:600;font-size:15.5px;padding:19px 22px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";font:500 22px var(--font-d);color:var(--em);transition:transform .25s;flex-shrink:0}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq p{color:var(--muted);font-size:14.5px;padding:0 22px 20px}
+
+  /* cta band */
+  .cta-band{position:relative;border:1px solid var(--line2);border-radius:26px;padding:64px 40px;text-align:center;overflow:hidden;
+    background:radial-gradient(600px 300px at 50% -40%, rgba(52,211,153,.16), transparent 70%), var(--panel-solid)}
+  .cta-band h2{margin-bottom:10px}
+  .cta-band .lead{margin:0 auto 30px}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:44px 0 50px;color:var(--dim);font-size:13.5px}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--text)}
+  .foot-links{display:flex;gap:22px}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(2,4,8,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
   .modal.open{display:flex}
-  .mbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);max-width:460px;width:100%;padding:28px}
-  .mbox h3{margin-bottom:6px}
-  .mbox p{color:var(--muted);font-size:14.5px;margin-bottom:16px}
-  .mbox input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;margin-bottom:10px}
-  .mbox .row{display:flex;gap:10px;margin-top:6px}
-  .mbox .x{position:absolute}
-  .ok{color:var(--acc);font-size:14.5px;display:none;margin-top:8px}
-  @media(max-width:860px){.hero{grid-template-columns:1fr;padding-top:44px}.grid3,.pricing{grid-template-columns:1fr}}
+  .mbox{background:var(--panel-solid);border:1px solid var(--line2);border-radius:20px;max-width:470px;width:100%;padding:32px;box-shadow:0 40px 100px rgba(0,0,0,.6)}
+  .mbox h3{font:600 21px var(--font-d);margin-bottom:8px}
+  .mbox p{color:var(--muted);font-size:14.5px;margin-bottom:20px}
+  .mbox input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:12px;padding:13px 15px;color:var(--text);font:500 15px var(--font-b);margin-bottom:11px;outline:0;transition:border .2s}
+  .mbox input:focus{border-color:rgba(52,211,153,.5)}
+  .mrow{display:flex;gap:10px;margin-top:8px}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}.bar i{transition:none}}
+
+  @media(max-width:920px){
+    .hero{grid-template-columns:1fr;padding-top:52px;gap:44px}
+    .stats,.grid3,.pgrid{grid-template-columns:1fr}
+    .nav-links a:not(.btn){display:none}
+  }
 </style>
 </head>
 <body>
+<div class="fx"></div>
 
-<header><div class="wrap nav">
-  <div class="logo">Aisle<em>Rank</em></div>
-  <a class="btn-sm" href="#demo" data-evt="nav_book_click">Book a walkthrough</a>
-</div></header>
+<nav><div class="wrap nav-in">
+  <a class="logo" href="#">Aisle<em>Rank</em></a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn btn-em btn-sm" href="#demo" data-evt="nav_book_click">Book a walkthrough</a>
+  </div>
+</div></nav>
 
 <!-- HERO -->
-<div class="wrap hero">
+<header class="wrap hero">
   <div>
-    <h1>We get your supplement brand <span class="u">recommended by ChatGPT, Perplexity&nbsp;&amp;&nbsp;Gemini</span>.</h1>
-    <p class="sub">AI assistants are the new shopping aisle — and they're already recommending someone. Enter your store URL and see your AI Visibility Score, plus which competitors are winning the queries your buyers actually ask.</p>
-    <form class="urlform" id="scoreForm">
+    <div class="pill"><span class="dot"></span> Weekly runs across 4 AI platforms · supplements first</div>
+    <h1>Your buyers ask AI.<br>We make sure it <span class="g">answers with you</span>.</h1>
+    <p class="sub">AI assistants are the new shopping aisle — and they're already recommending someone in your category. See your AI Visibility Score, the competitors beating you, and exactly what to fix.</p>
+    <form class="urlbar" id="scoreForm">
       <input type="url" id="storeUrl" placeholder="https://yourstore.com" required>
-      <button class="btn" type="submit">Get your free AI Visibility Score</button>
+      <button class="btn btn-em" type="submit">Get your free score</button>
     </form>
-    <p class="tiny">Free · No signup · Scored across 4 AI platforms, 60 real buyer queries</p>
-    <p class="ok" id="scoreOk">✓ Got it — your score report will land in your inbox within 24 hours.</p>
+    <div class="trust"><span>Free · no signup</span><span>60 real buyer queries</span><span>ChatGPT · Perplexity · Gemini · Google AI</span></div>
+    <p class="ok" id="scoreOk">✓ Got it — your score report lands in your inbox within 24 hours.</p>
   </div>
-  <div class="scorecard">
-    <h3>AI Visibility Score — sample</h3>
-    <div class="scorerow you"><div class="name">Your store</div><div class="bar"><i style="width:41%;background:var(--red)"></i></div><div class="val">41</div></div>
-    <div class="scorerow them"><div class="name">Competitor A</div><div class="bar"><i style="width:78%;background:var(--acc)"></i></div><div class="val">78</div></div>
-    <div class="scorerow them"><div class="name">Competitor B</div><div class="bar"><i style="width:66%;background:var(--acc)"></i></div><div class="val">66</div></div>
-    <div class="scorerow them"><div class="name">Competitor C</div><div class="bar"><i style="width:52%;background:var(--amber)"></i></div><div class="val">52</div></div>
-    <p class="scorenote">Competitor A gets recommended in <b>6 of 8</b> "best magnesium" queries we tested. Your store appears in <b>1</b>.</p>
+
+  <div class="card-wrap reveal">
+    <div class="scard">
+      <div class="scard-head">
+        <div class="scard-title">AI VISIBILITY SCORE — SAMPLE</div>
+        <div class="live"><span class="dot"></span>LIVE WEEKLY RUN</div>
+      </div>
+      <div class="srow you"><div class="name">Your store</div><div class="bar b-red"><i data-w="41"></i></div><div class="val v-red">41</div></div>
+      <div class="srow"><div class="name">Competitor A</div><div class="bar b-em"><i data-w="78"></i></div><div class="val v-em">78</div></div>
+      <div class="srow"><div class="name">Competitor B</div><div class="bar b-em"><i data-w="66"></i></div><div class="val v-em">66</div></div>
+      <div class="srow"><div class="name">Competitor C</div><div class="bar b-am"><i data-w="52"></i></div><div class="val v-am">52</div></div>
+      <div class="chips"><span class="chip">ChatGPT</span><span class="chip">Perplexity</span><span class="chip">Gemini</span><span class="chip">Google AI</span></div>
+      <div class="callout"><b>Competitor A</b> gets recommended in <b>6 of 8</b> “best magnesium” queries this week. Your store appears in <b>1</b>.</div>
+    </div>
   </div>
-</div>
+</header>
+
+<!-- STATS -->
+<section class="sec-line"><div class="wrap">
+  <div class="stats">
+    <div class="stat reveal"><div class="n" data-count="393" data-prefix="+" data-suffix="%">+393%</div><div class="l">AI-referred retail traffic, year over year</div></div>
+    <div class="stat reveal" style="transition-delay:.08s"><div class="n" data-count="42" data-suffix="%">42%</div><div class="l">better conversion than any other channel</div></div>
+    <div class="stat reveal" style="transition-delay:.16s"><div class="n" data-count="37" data-suffix="%">37%</div><div class="l">more revenue per AI-referred visit</div></div>
+  </div>
+  <div class="src">Adobe Analytics, U.S. retail, 2026</div>
+</div></section>
 
 <!-- HOW IT WORKS -->
-<section><div class="wrap">
-  <h2>Buyers ask AI. AI answers with a shortlist. Are you on it?</h2>
-  <p class="lead">AI-referred shoppers convert 42% better and spend 37% more. Here's how we get you into the answers:</p>
+<section class="sec-line" id="how"><div class="wrap">
+  <div class="kicker">How it works</div>
+  <h2>Buyers ask AI. AI answers with a shortlist.<br>We get you on it.</h2>
+  <p class="lead">One category-wide query run scores every store against the same questions your buyers actually ask — so your score, and your competitors', are always apples to apples.</p>
   <div class="grid3">
-    <div class="card"><div class="n">01 — AUDIT</div><h3>Score your visibility</h3><p>We run 40–60 real buyer queries ("best creatine for women") across ChatGPT, Perplexity, Gemini &amp; Google AI and score your store /100 — next to 3 named competitors.</p></div>
-    <div class="card"><div class="n">02 — FIX</div><h3>Fix what AI can't see</h3><p>Structured data, product feed quality, content gaps, merchant-program enrollment — the exact line items that decide whether AI recommends you or skips you.</p></div>
-    <div class="card"><div class="n">03 — TRACK</div><h3>Watch you vs. them, weekly</h3><p>AI answers shift within days of model updates. Every week: your share of voice vs. 3 competitors, what changed, and what to do about it.</p></div>
+    <div class="fcard reveal"><div class="numchip">01</div><h3>Score your visibility</h3><p>We run 40–60 real buyer queries — “best creatine for women”, “magnesium glycinate vs citrate” — across ChatGPT, Perplexity, Gemini & Google AI, and score you /100 next to three named competitors.</p></div>
+    <div class="fcard reveal" style="transition-delay:.08s"><div class="numchip">02</div><h3>Fix what AI can't see</h3><p>Structured data, product-feed quality, content gaps, AI-crawler access, merchant-program enrollment — the exact line items that decide whether AI recommends you or skips you.</p></div>
+    <div class="fcard reveal" style="transition-delay:.16s"><div class="numchip">03</div><h3>Watch you vs. them, weekly</h3><p>AI answers reshuffle within days of every model update. Every week: your share of voice vs. three competitors, what changed, and the next move — in one email.</p></div>
   </div>
 </div></section>
 
-<!-- LOOM -->
-<section><div class="wrap">
-  <h2>See a real audit in 4 minutes</h2>
-  <p class="lead">A real supplement store, scored live — where it loses to competitors and what we'd fix first.</p>
-  <div class="loomph" id="loomSlot"><div class="play">▶</div><div>Walkthrough video — coming this week</div></div>
-  <!-- TODO Wk3: replace .loomph with Loom embed <div class="loom-embed">…</div> and keep id="loomSlot" -->
+<!-- VIDEO -->
+<section class="sec-line"><div class="wrap">
+  <div class="kicker">See it live</div>
+  <h2>A real audit, in four minutes</h2>
+  <p class="lead">A real supplement store, scored live — where it loses to competitors, and what we'd fix first.</p>
+  <div class="vframe reveal" id="loomSlot"><div class="play">▶</div><p>Walkthrough video — coming this week</p></div>
 </div></section>
 
-<!-- PRICING (fake door) -->
-<section id="pricing"><div class="wrap">
-  <h2>Pricing</h2>
-  <p class="lead">Founding-customer pricing available for the first supplement brands — locked for 12 months.</p>
-  <div class="pricing">
-    <div class="tier">
-      <h3>Monitor</h3><div class="price">$99<span>/mo</span></div>
-      <ul><li>Weekly "You vs. 3 competitors" report</li><li>60-query visibility tracking, 4 AI platforms</li><li>Share-of-voice trend + alerts</li><li>Top-5 fix list, refreshed monthly</li></ul>
-      <button class="btn ghost" data-tier="monitor_99" data-price="$99/mo">Start monitoring</button>
+<!-- PRICING -->
+<section class="sec-line" id="pricing"><div class="wrap">
+  <div class="kicker">Pricing</div>
+  <h2>Priced against outcomes, not dashboards</h2>
+  <p class="lead">Founding-cohort pricing for the first supplement brands — locked for 12 months.</p>
+  <div class="pgrid">
+    <div class="tier reveal">
+      <h3>Monitor</h3><div class="price">$99<span>/mo</span></div><div class="psub">Know exactly where you stand</div>
+      <ul><li>Weekly “You vs. 3 competitors” report</li><li>60-query tracking across 4 AI platforms</li><li>Share-of-voice trend + change alerts</li><li>Top-5 fix list, refreshed monthly</li></ul>
+      <button class="btn btn-ghost" data-tier="monitor_99" data-price="$99/mo">Start monitoring</button>
     </div>
-    <div class="tier hot">
-      <h3>Monitor Pro</h3><div class="price">$249<span>/mo</span></div>
-      <ul><li>Everything in Monitor</li><li>Track 3 categories + 6 competitors</li><li>Query-level breakdowns &amp; citations</li><li>Monthly strategy note, written by a human</li></ul>
-      <button class="btn alt" data-tier="pro_249" data-price="$249/mo">Start Pro</button>
+    <div class="tier hot reveal" style="transition-delay:.08s">
+      <div class="hot-badge">MOST POPULAR</div>
+      <h3>Monitor Pro</h3><div class="price">$249<span>/mo</span></div><div class="psub">Full competitive picture</div>
+      <ul><li>Everything in Monitor</li><li>3 categories + 6 tracked competitors</li><li>Query-level breakdowns & citations</li><li>Monthly strategy note, written by a human</li></ul>
+      <button class="btn btn-em" data-tier="pro_249" data-price="$249/mo">Start Pro</button>
     </div>
-    <div class="tier">
-      <h3>Done-for-you</h3><div class="price">from $750<span>/mo</span></div>
-      <ul><li>We do the fixes for you, monthly sprint</li><li>Schema, feeds, content, merchant programs</li><li>Weekly competitive reporting</li><li>Slack/email access to your operator</li></ul>
-      <button class="btn" data-tier="dfy_750" data-price="from $750/mo">Talk to us</button>
+    <div class="tier reveal" style="transition-delay:.16s">
+      <h3>Done-for-you</h3><div class="price">$750<span>+ /mo</span></div><div class="psub">We do the fixes for you</div>
+      <ul><li>Monthly optimization sprint, done for you</li><li>Schema, feeds, content, merchant programs</li><li>Weekly competitive reporting</li><li>Direct line to your operator</li></ul>
+      <button class="btn btn-ghost" data-tier="dfy_750" data-price="from $750/mo">Talk to us</button>
     </div>
   </div>
 </div></section>
 
 <!-- CALENDLY -->
-<section id="demo"><div class="wrap">
-  <h2>Book a 15-minute walkthrough</h2>
-  <p class="lead">Bring your store URL. We'll pull your score live and show you exactly where competitors are beating you.</p>
-  <div class="calendly-inline-widget" id="calendlyWidget" style="min-width:320px;height:680px;border-radius:14px;overflow:hidden"></div>
-</div></section>
-
-<!-- METHODOLOGY -->
-<section><div class="wrap">
-  <h2>How we measure — plainly</h2>
-  <div class="meth" id="methodology">
-    We query AI platforms via their official APIs with retrieval/search enabled, using a fixed set of 40–60 buyer-intent prompts per category, re-run on a weekly cycle. Every report states which platforms, which query set, and the run date. API answers can differ from what an individual consumer sees in an app — we say so on every report rather than pretend otherwise. We don't scrape or automate consumer apps. Scores are comparable within a category because every brand is measured against the identical query run.
+<section class="sec-line" id="demo"><div class="wrap">
+  <div class="kicker">15 minutes</div>
+  <h2>Watch us pull your score, live</h2>
+  <p class="lead">Bring your store URL. We'll run it on the call and show you exactly where competitors are beating you — and what we'd fix first.</p>
+  <div class="calframe reveal">
+    <div class="calendly-inline-widget" id="calendlyWidget" style="min-width:320px;height:680px"></div>
   </div>
 </div></section>
 
-<!-- FAQ -->
-<section><div class="wrap faq">
-  <h2>Questions founders ask</h2>
-  <details data-evt="faq_open" data-q="control"><summary>Can you really influence what AI assistants recommend?</summary><p>You can't bribe a model — but recommendations are driven by what models can see and verify: structured data, product feeds, comparison content, reviews, merchant-program participation. Brands that fix those get cited. That's the work.</p></details>
-  <details data-evt="faq_open" data-q="timeline"><summary>How fast do results show up?</summary><p>AI answers re-shuffle within days of model and index updates — that's why we track weekly. Fixes typically start showing in 2–6 weeks; we show you the movement rather than ask you to trust us.</p></details>
-  <details data-evt="faq_open" data-q="seo"><summary>Is this just SEO with new branding?</summary><p>It overlaps (good structured data helps both) but the ranking systems, query patterns, and fix lists are different. Your SEO agency isn't checking whether Perplexity recommends you for "best magnesium glycinate."</p></details>
-  <details data-evt="faq_open" data-q="vertical"><summary>Why supplements only?</summary><p>Depth beats breadth: one category-wide query set means we score you against your actual competitors, not generic benchmarks. Pet brands are next — join the list and we'll tell you when.</p></details>
+<!-- METHODOLOGY -->
+<section class="sec-line"><div class="wrap">
+  <div class="kicker">No black box</div>
+  <h2>How we measure — plainly</h2>
+  <div class="meth reveal" id="methodology"><div class="shield">🛡</div><div>
+    We query AI platforms via their official APIs with retrieval enabled, using a fixed set of 40–60 buyer-intent prompts per category, re-run weekly. Every report states which platforms, which query set, and the run date. API answers can differ from what one consumer sees in an app — we say so on every report rather than pretend otherwise. We never scrape consumer apps. Because every brand in a category is scored against the identical run, every comparison is apples to apples.
+  </div></div>
 </div></section>
 
-<footer><div class="wrap">
-  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px">
-    <div>© 2026 AisleRank · <a href="/tos.html">Terms</a> · <a href="/privacy.html">Privacy</a></div>
-    <div><!-- TODO: physical mailing address (CAN-SPAM) -->Address: TODO-LLC-ADDRESS · <a href="mailto:hello@aislerank.com">hello@aislerank.com</a></div>
+<!-- FAQ -->
+<section class="sec-line" id="faq"><div class="wrap">
+  <div class="kicker">FAQ</div>
+  <h2>Questions founders ask</h2>
+  <div class="faq" style="margin-top:34px">
+    <details data-evt="faq_open" data-q="control"><summary>Can you really influence what AI assistants recommend?</summary><p>You can't bribe a model — but recommendations are driven by what models can see and verify: structured data, product feeds, comparison content, reviews, merchant-program participation. Brands that fix those get cited. That's the work.</p></details>
+    <details data-evt="faq_open" data-q="timeline"><summary>How fast do results show up?</summary><p>AI answers reshuffle within days of model and index updates — that's why we track weekly. Fixes typically start showing in 2–6 weeks, and we show you the movement instead of asking you to trust us.</p></details>
+    <details data-evt="faq_open" data-q="seo"><summary>Is this just SEO with new branding?</summary><p>It overlaps — good structured data helps both — but the ranking systems, query patterns, and fix lists are different. Your SEO agency isn't checking whether Perplexity recommends you for “best magnesium glycinate.”</p></details>
+    <details data-evt="faq_open" data-q="vertical"><summary>Why supplements only?</summary><p>Depth beats breadth: one category-wide query set means you're scored against your actual competitors, not generic benchmarks. Pet brands are next — join the list and we'll tell you when.</p></details>
+  </div>
+</div></section>
+
+<!-- CTA BAND -->
+<section><div class="wrap">
+  <div class="cta-band reveal">
+    <h2>The AI is already recommending someone.<br><span style="background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent">Find out if it's you.</span></h2>
+    <p class="lead">Free score · 60 real buyer queries · you vs. three named competitors</p>
+    <a class="btn btn-em" href="#scoreForm" onclick="document.getElementById('storeUrl').focus()">Get your free AI Visibility Score</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap foot">
+  <div>
+    <a class="logo" href="#" style="font-size:18px">Aisle<em>Rank</em></a>
+    <div style="margin-top:10px">© 2026 AisleRank · AI visibility for supplement brands</div>
+    <div style="margin-top:4px"><!-- TODO: physical mailing address (CAN-SPAM) -->Address: TODO-LLC-ADDRESS</div>
+  </div>
+  <div class="foot-links">
+    <a href="/tos.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="mailto:hello@aislerank.com">hello@aislerank.com</a>
   </div>
 </div></footer>
 
 <!-- FOUNDING-ACCESS MODAL (fake door) -->
 <div class="modal" id="fdModal" role="dialog" aria-modal="true">
   <div class="mbox">
-    <h3 id="fdTitle">Founding access</h3>
-    <p id="fdBody">We're onboarding our founding cohort of supplement brands right now. Leave your email and store URL — you'll get founding pricing (locked 12 months) when your spot opens.</p>
+    <h3>Founding access</h3>
+    <p>We're onboarding our founding cohort of supplement brands right now. Leave your email and store URL — you'll get founding pricing (locked 12 months) when your spot opens.</p>
     <input type="email" id="fdEmail" placeholder="you@brand.com" required>
     <input type="url" id="fdUrl" placeholder="https://yourstore.com">
-    <div class="row">
-      <button class="btn" id="fdSubmit" style="flex:1">Request founding access</button>
-      <button class="btn ghost" id="fdClose">Close</button>
+    <div class="mrow">
+      <button class="btn btn-em" id="fdSubmit" style="flex:1">Request founding access</button>
+      <button class="btn btn-ghost" id="fdClose">Close</button>
     </div>
     <p class="ok" id="fdOk">✓ You're on the list — watch your inbox.</p>
   </div>
 </div>
 
 <script>
-/* ---------- PostHog (guarded: no key, no-op) ---------- */
+/* ---------- PostHog ---------- */
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
 if (CFG.POSTHOG_KEY) posthog.init(CFG.POSTHOG_KEY,{api_host:CFG.POSTHOG_HOST,person_profiles:"identified_only"});
 function track(evt, props){ if(CFG.POSTHOG_KEY) posthog.capture(evt, props||{}); else console.log("[evt]",evt,props||{}); }
@@ -217,9 +399,8 @@ async function saveLead(row){
 }
 
 /* ---------- Funnel events ---------- */
-/* 1. visit */ track("landing_visit",{path:location.pathname,ref:document.referrer});
+track("landing_visit",{path:location.pathname,ref:document.referrer});
 
-/* 2. URL submit */
 document.getElementById("scoreForm").addEventListener("submit",async function(e){
   e.preventDefault();
   const url=document.getElementById("storeUrl").value.trim();
@@ -229,7 +410,6 @@ document.getElementById("scoreForm").addEventListener("submit",async function(e)
   this.querySelector("button").textContent="Requested ✓";
 });
 
-/* 3. pricing fake-door clicks */
 let fdTier=null;
 document.querySelectorAll("[data-tier]").forEach(b=>b.addEventListener("click",()=>{
   fdTier=b.dataset.tier;
@@ -247,19 +427,35 @@ document.getElementById("fdSubmit").addEventListener("click",async ()=>{
   document.getElementById("fdOk").style.display="block";
 });
 
-/* 4. book: Calendly embed + booking event */
+/* ---------- Calendly ---------- */
 (function(){
   const w=document.getElementById("calendlyWidget");
-  w.setAttribute("data-url",CFG.CALENDLY_URL+"?hide_gdpr_banner=1&background_color=121821&text_color=e8edf3&primary_color=31d98c");
+  w.setAttribute("data-url",CFG.CALENDLY_URL+"?hide_gdpr_banner=1&background_color=0b1018&text_color=f2f5f9&primary_color=34d399");
   const s=document.createElement("script"); s.src="https://assets.calendly.com/assets/external/widget.js"; s.async=true; document.body.appendChild(s);
   window.addEventListener("message",e=>{ if(e.data?.event==="calendly.event_scheduled"){ track("demo_booked",{}); } });
 })();
 
-/* misc: nav + FAQ */
+/* ---------- misc events ---------- */
 document.querySelectorAll("[data-evt]").forEach(el=>{
   const fire=()=>track(el.dataset.evt,{q:el.dataset.q||null});
   el.tagName==="DETAILS" ? el.addEventListener("toggle",()=>{if(el.open)fire();}) : el.addEventListener("click",fire);
 });
+
+/* ---------- score bars ---------- */
+window.addEventListener("load",()=>{ setTimeout(()=>{ document.querySelectorAll(".bar i").forEach(b=>{ b.style.width=b.dataset.w+"%"; }); }, 350); });
+
+/* ---------- scroll reveal ---------- */
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}})},{threshold:.15});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+/* ---------- count-up stats ---------- */
+const cio=new IntersectionObserver(es=>{es.forEach(en=>{
+  if(!en.isIntersecting) return; cio.unobserve(en.target);
+  const el=en.target, end=+el.dataset.count, pre=el.dataset.prefix||"", suf=el.dataset.suffix||"", t0=performance.now(), dur=1400;
+  (function step(t){ const p=Math.min((t-t0)/dur,1), v=Math.round(end*(1-Math.pow(1-p,3)));
+    el.textContent=pre+v+suf; if(p<1) requestAnimationFrame(step); })(t0);
+})},{threshold:.6});
+document.querySelectorAll("[data-count]").forEach(el=>cio.observe(el));
 </script>
 </body>
 </html>
