@@ -1,0 +1,19 @@
+# AisleRank
+
+> AisleRank gets supplement brands recommended by AI assistants (ChatGPT, Perplexity, Gemini, Google AI). We score a brand's AI visibility against real buyer queries, fix what AI can't see (structured data, product feeds, content, merchant programs), and track share of voice against named competitors weekly.
+
+## What we do
+- Free AI Visibility Score: a store is scored /100 across 4 AI platforms against 40–60 real buyer-intent queries for its category, next to three named competitors.
+- Monitoring ($99–$249/mo): weekly "You vs. 3 competitors" reporting, share-of-voice trends, query-level breakdowns, fix lists.
+- Done-for-you ($750+/mo): monthly optimization sprints — schema, feed enrichment, AI-crawler access, comparison content, merchant-program enrollment — plus weekly competitive reporting.
+
+## Method
+Official platform APIs with retrieval enabled, fixed per-category query sets, weekly runs. Every brand in a category is scored against the identical run, so comparisons are apples to apples. Methodology (platforms, query set, run date) is disclosed in every report.
+
+## Focus
+US supplement brands on Shopify first; pet brands next.
+
+## Contact
+- Website: https://aislerank.com
+- Email: hello@aislerank.com
+- Book a walkthrough: https://calendly.com/derek-getaislerank/30min
