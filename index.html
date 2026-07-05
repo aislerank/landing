@@ -61,8 +61,11 @@ const CFG = {
   .nav-links a:hover{color:var(--text)}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;text-decoration:none;
     font:600 15px var(--font-b);border-radius:12px;padding:13px 22px;transition:all .2s;white-space:nowrap}
-  .btn-em{background:var(--grad);color:#04231a;box-shadow:0 0 24px rgba(52,211,153,.35), inset 0 1px 0 rgba(255,255,255,.35)}
-  .btn-em:hover{transform:translateY(-1px);box-shadow:0 0 36px rgba(52,211,153,.5), inset 0 1px 0 rgba(255,255,255,.35)}
+  .btn-em{background:linear-gradient(92deg,#4ade80,#34d399 55%,#2dd4bf);color:#01130c;font-weight:700;
+    box-shadow:0 0 24px rgba(52,211,153,.35), inset 0 1px 0 rgba(255,255,255,.45)}
+  .btn-em:hover{transform:translateY(-1px);box-shadow:0 0 36px rgba(52,211,153,.55), inset 0 1px 0 rgba(255,255,255,.45)}
+  .btn-sm.btn-em{box-shadow:0 0 10px rgba(52,211,153,.3), inset 0 1px 0 rgba(255,255,255,.45);font-weight:700}
+  .nav-links a.btn-em, .nav-links a.btn-em:hover{color:#01130c}
   .btn-ghost{background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--line2)}
   .btn-ghost:hover{background:rgba(255,255,255,.08)}
   .btn-sm{padding:9px 16px;font-size:13.5px;border-radius:10px}
